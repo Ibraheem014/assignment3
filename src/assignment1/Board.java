@@ -1,20 +1,12 @@
 package assignment1;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Board {
     public int size = 5;
-
     // 2D Array of Cells for representation of the game board
     public final Cell[][] board = new Cell[size][size];
 
@@ -52,24 +44,20 @@ public class Board {
     }
 
     /**
-     * @return the Piece.Type (Muskeeteer or Guard) of the current turn
+     * @return the Piece.Type (Musketeer or Guard) of the current turn
      */
     public Piece.Type getTurn() {
         return turn;
     }
 
-    /**
-     * Get the cell located on the board at the given coordinate.
-     * @param coordinate Coordinate to find the cell
-     * @return Cell that is located at the given coordinate
-     */
+    public void setTurn(Piece.Type turn) {
+        this.turn = turn;
+    }
+
     public Cell getCell(Coordinate coordinate) {
         return this.board[coordinate.row][coordinate.col];
     }
 
-    /**
-     * @return the game winner Piece.Type (Muskeeteer or Guard) if there is one otherwise null
-     */
     public Piece.Type getWinner() {
         return winner;
     }
@@ -97,7 +85,7 @@ public class Board {
     }
 
     /**
-     * Executes the given move on the board and changes turns at the end of the method.
+     * Executes the given move on the board.
      * @param move a valid move
      */
     public void move(Move move) {
@@ -110,7 +98,7 @@ public class Board {
     /**
      * Undo the move given.
      * @param move Copy of a move that was done and needs to be undone. The move copy has the correct piece info in the
-     *             from and to cell fields. Changes turns at the end of the method.
+     *             from and to cell fields.
      */
     public void undoMove(Move move) {
         Cell fromCell = getCell(move.fromCell.getCoordinate());
@@ -121,9 +109,7 @@ public class Board {
     }
 
     /**
-     * Checks if the given move is valid. Things to check:
-     * (1) the toCell is next to the fromCell
-     * (2) the fromCell piece can move onto the toCell piece.
+     * Checks if the given move is valid.
      * @param move a move
      * @return     True, if the move is valid, false otherwise
      */
@@ -210,7 +196,7 @@ public class Board {
     /**
      * Saves the current board state to the boards directory
      */
-    public void saveBoard() {
+    public void saveBoard() { ;
         String filePath = String.format("boards/%s.txt",
                 new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
         File file = new File(filePath);
@@ -254,6 +240,31 @@ public class Board {
         return boardStr.toString();
     }
 
+    private List<Cell> getAllCells() {
+        return Arrays.stream(board).flatMap(Arrays::stream).collect(Collectors.toList());
+    }
+
+    private Boolean onBoard(Coordinate coordinate) {
+        return 0 <= coordinate.col && coordinate.col < this.size &&
+                0 <= coordinate.row && coordinate.row < this.size;
+    }
+
+    private Boolean isNextTo(Coordinate fromCoordinate, Coordinate toCoordinate) {
+        int xDiff = Math.abs(fromCoordinate.col - toCoordinate.col);
+        int yDiff = Math.abs(fromCoordinate.row - toCoordinate.row);
+        return (xDiff == 0 && yDiff == 1) || (xDiff == 1 && yDiff == 0) ;
+    }
+
+    private Boolean inSameRowOrSameCol(List<Cell> cells) {
+        long numRows = cells.stream().map(cell -> cell.getCoordinate().row).distinct().count();
+        long numCols = cells.stream().map(cell -> cell.getCoordinate().col).distinct().count();
+        return numRows == 1 || numCols == 1;
+    }
+
+    private void changeTurn() {
+        setTurn(getTurn() == Piece.Type.MUSKETEER ? Piece.Type.GUARD : Piece.Type.MUSKETEER);
+    }
+
     /**
      * Loads a board file from a file path.
      * @param filePath The path to the board file to load (e.g. "Boards/Starter.txt")
@@ -288,6 +299,6 @@ public class Board {
             row += 1;
         }
         scanner.close();
-        System.out.printf("Loaded board from %s.\n", filePath);
+        System.out.printf("Loaded board from %s.\n", file.getPath());
     }
 }

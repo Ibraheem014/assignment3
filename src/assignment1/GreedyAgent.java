@@ -26,7 +26,7 @@ public class GreedyAgent extends Agent {
     @Override
     public Move getMove() {
         boardCopy = new Board(board);
-        int bestScore = boardCopy.getTurn().equals(Piece.Type.MUSKETEER) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        double bestScore = boardCopy.getTurn().equals(Piece.Type.MUSKETEER) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         Move chosenMove = null;
 
         List<Move> possibleMoves = boardCopy.getPossibleMoves();
@@ -36,9 +36,9 @@ public class GreedyAgent extends Agent {
             Piece.Type turn = boardCopy.getTurn();
             boardCopy.move(move);
 
-            int score = this.minimax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            double score = this.minimax(depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
-            System.out.printf("Move: %s Score: %d\n", move, score);
+            System.out.printf("Move: %s Score: %.2f\n", move, score);
             if (turn.equals(Piece.Type.MUSKETEER) && score > bestScore) {
                 bestScore = score;
                 chosenMove = new Move(moveCopy);
@@ -52,7 +52,7 @@ public class GreedyAgent extends Agent {
         }
 
         assert chosenMove != null;
-        System.out.printf("[%s (Greedy Agent)] Moving piece %s to %s. Best Score: %d\n",
+        System.out.printf("[%s (Greedy Agent)] Moving piece %s to %s. Best Score: %.2f\n",
                 board.getTurn().getType(), chosenMove.fromCell.getCoordinate(), chosenMove.toCell.getCoordinate(),
                 bestScore);
         return new Move(
@@ -68,12 +68,12 @@ public class GreedyAgent extends Agent {
      * @param beta value used for alpha beta pruning
      * @return
      */
-    private int minimax(int depth, int alpha, int beta) {
+    private double minimax(int depth, double alpha, double beta) {
         if (depth == 0 || boardCopy.isGameOver()) {
             return boardEvaluator.evaluateBoard(boardCopy);
         }
 
-        int bestScore = boardCopy.getTurn().equals(Piece.Type.MUSKETEER) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        double bestScore = boardCopy.getTurn().equals(Piece.Type.MUSKETEER) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         List<Move> possibleMoves = boardCopy.getPossibleMoves();
         for (Move move: possibleMoves) {
@@ -81,7 +81,7 @@ public class GreedyAgent extends Agent {
             Piece.Type turn = boardCopy.getTurn();
             boardCopy.move(move);
 
-            int score = this.minimax(depth - 1, alpha, beta);
+            double score = this.minimax(depth - 1, alpha, beta);
 
             if (turn.equals(Piece.Type.MUSKETEER)) {
                 bestScore = Math.max(bestScore, score);
